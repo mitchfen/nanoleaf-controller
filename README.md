@@ -3,6 +3,6 @@ A super basic webapp to allow people on my home network to control the lights fr
 <img src="./readme-screenshot.png"/>
 
 ## How to run it
-1. Set the token as an env var: `Set auth token: $env:NANOLEAF__AUTHTOKEN = "****"`
+1. Set the token as an env var: `$env:NANOLEAF__AUTHTOKEN = "****"`
 2. `dotnet run`
 3. Navigate to http://localhost:5009 
