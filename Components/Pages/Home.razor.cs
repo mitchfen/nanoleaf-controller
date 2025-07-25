@@ -21,20 +21,20 @@ namespace nanoleaf_controller.Components.Pages
 
         private async Task SendPowerCommand(bool on)
         {
-            await SendCommand(new { on = new { value = on } });
+            await SendCommand(new { on = new { value = on } }, "state");
         }
 
         private async Task SetBrightness()
         {
-            await SendCommand(new { brightness = new { value = brightness } });
+            await SendCommand(new { brightness = new { value = brightness } }, "state");
         }
 
         private async Task SetEffect()
         {
-            await SendCommand(new { select = selectedEffect });
+            await SendCommand(new { select = selectedEffect }, "effects");
         }
 
-        private async Task SendCommand(object body)
+        private async Task SendCommand(object body, string endpoint)
         {
             var nanoleafIp = Configuration["Nanoleaf:IpAddress"];
             var authToken = Configuration["Nanoleaf:AuthToken"];
@@ -46,7 +46,7 @@ namespace nanoleaf_controller.Components.Pages
             }
 
             var client = new HttpClient();
-            var url = $"http://{nanoleafIp}:16021/api/v1/{authToken}/state";
+            var url = $"http://{nanoleafIp}:16021/api/v1/{authToken}/{endpoint}";
             var content = new StringContent(JsonSerializer.Serialize(body), System.Text.Encoding.UTF8, "application/json");
 
             try
