@@ -6,33 +6,59 @@
 @using System.Text.Json
 
 
-<PageTitle>Nanoleaf Controller</PageTitle>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Nanoleaf Controller</h1>
+        </div>
+        <div class="control-group">
+            <div class="button-group">
+                <button class="btn btn-outline-success @(isNanoleafOn ? "active" : "")" @onclick="() => SendPowerCommand(true)">Turn On</button>
+                <button class="btn btn-outline-danger @(!isNanoleafOn ? "active" : "")" @onclick="() => SendPowerCommand(false)">Turn Off</button>
+            </div>
+        </div>
 
-<h1>Nanoleaf Controller</h1>
+        <hr />
 
-<button @onclick="() => SendPowerCommand(true)">Turn On</button>
-<button @onclick="() => SendPowerCommand(false)">Turn Off</button>
+        <div class="control-group">
+            <label for="brightness" class="form-label">Brightness</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" class="form-range" min="0" max="100" id="brightness" @bind="brightness" @bind:event="oninput" />
+                <span style="width: 40px; text-align: right;">@brightness%</span>
+            </div>
+            <button class="btn btn-primary" @onclick="SetBrightness">Set Brightness</button>
+        </div>
 
-<div class="d-flex align-items-center my-3">
-    <label for="brightness" class="form-label me-2 mb-0">Brightness:</label>
-    <input type="range" class="form-range" min="0" max="100" id="brightness" @bind="brightness" @bind:event="oninput" />
-    <span class="ms-2" style="width: 40px;">@brightness%</span>
-</div>
-<button class="btn btn-primary" @onclick="SetBrightness">Set Brightness</button>
+        <hr />
 
-<div class="d-flex align-items-center my-3">
-    <label for="effect" class="form-label me-2 mb-0">Effect:</label>
-    <select class="form-select" id="effect" @bind="selectedEffect">
-        @foreach (var effect in effects)
+        <div class="control-group">
+            <label for="effect" class="form-label">Effect</label>
+            <select class="form-select" id="effect" @bind="selectedEffect">
+                @foreach (var effect in effects)
+                {
+                    <option value="@effect">@effect</option>
+                }
+            </select>
+            <button class="btn btn-primary" @onclick="SetEffect">Set Effect</button>
+        </div>
+
+        <hr />
+
+        <div class="control-group">
+            <label for="colorTemp" class="form-label">Color Temperature</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" class="form-range" min="1200" max="6500" id="colorTemp" @bind="colorTemperature" @bind:event="oninput" />
+                <span style="width: 60px; text-align: right;">@colorTemperature K</span>
+            </div>
+            <button class="btn btn-primary" @onclick="SetColorTemperature">Set Color Temperature</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(statusMessage))
         {
-            <option value="@effect">@effect</option>
+            <div class="alert">
+                @statusMessage
+            </div>
         }
-    </select>
+    </div>
 </div>
-<button class="btn btn-primary" @onclick="SetEffect">Set Effect</button>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <p>@statusMessage</p>
-}
 
