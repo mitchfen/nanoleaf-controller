@@ -25,3 +25,13 @@ jobs:
       - run: docker build -t ghcr.io/mitchfen/nanoleaf-controller:latest .
       - run: docker push ghcr.io/mitchfen/nanoleaf-controller:latest 
 
+  cleanup:
+    needs: publish-container
+    name: Cleanup untagged container images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mitchfen/cleanup-untagged-container-images@main
+        with:
+          username: 'mitchfen'
+          container-name: 'nanoleaf-controller'
+          token: ${{ secrets.GHCR_TOKEN }}
