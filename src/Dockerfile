@@ -15,7 +15,6 @@ WORKDIR /app
 
 COPY --from=build /app .
 
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "nanoleaf-controller.dll"]
