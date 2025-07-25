@@ -1,62 +1,38 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
 @using System.Net.Http
 @using System.Net.Http.Json
 @using System.Text
 @using System.Text.Json
 
-@inject IConfiguration Configuration
 
 <PageTitle>Nanoleaf Controller</PageTitle>
 
 <h1>Nanoleaf Controller</h1>
 
-<button @onclick="TurnOn">Turn On</button>
-<button @onclick="TurnOff">Turn Off</button>
+<button @onclick="() => SendPowerCommand(true)">Turn On</button>
+<button @onclick="() => SendPowerCommand(false)">Turn Off</button>
+
+<div class="d-flex align-items-center my-3">
+    <label for="brightness" class="form-label me-2 mb-0">Brightness:</label>
+    <input type="range" class="form-range" min="0" max="100" id="brightness" @bind="brightness" @bind:event="oninput" />
+    <span class="ms-2" style="width: 40px;">@brightness%</span>
+</div>
+<button class="btn btn-primary" @onclick="SetBrightness">Set Brightness</button>
+
+<div class="d-flex align-items-center my-3">
+    <label for="effect" class="form-label me-2 mb-0">Effect:</label>
+    <select class="form-select" id="effect" @bind="selectedEffect">
+        @foreach (var effect in effects)
+        {
+            <option value="@effect">@effect</option>
+        }
+    </select>
+</div>
+<button class="btn btn-primary" @onclick="SetEffect">Set Effect</button>
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
     <p>@statusMessage</p>
 }
 
-@code {
-    private string? statusMessage;
-
-    private async Task TurnOn()
-    {
-        await SendPowerCommand(true);
-    }
-
-    private async Task TurnOff()
-    {
-        await SendPowerCommand(false);
-    }
-
-    private async Task SendPowerCommand(bool on)
-    {
-        var nanoleafIp = Configuration["Nanoleaf:IpAddress"];
-        var authToken = Configuration["Nanoleaf:AuthToken"];
-
-        if (string.IsNullOrEmpty(nanoleafIp) || nanoleafIp == "YOUR_NANOLEAF_IP" || string.IsNullOrEmpty(authToken) || authToken == "REDACTED")
-        {
-            statusMessage = "IP address or Auth Token is not configured. Please check your appsettings.json or environment variables.";
-            return;
-        }
-
-        var client = new HttpClient();
-        var url = $"http://{nanoleafIp}:16021/api/v1/{authToken}/state";
-        var body = new { on = new { value = on } };
-        var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-
-        try
-        {
-            var response = await client.PutAsync(url, content);
-            response.EnsureSuccessStatusCode();
-            statusMessage = $"Successfully turned Nanoleaf {(on ? "on" : "off")}.";
-        }
-        catch (Exception ex)
-        {
-            statusMessage = $"Error: {ex.Message}";
-        }
-    }
-}

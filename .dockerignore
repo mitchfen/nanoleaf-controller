@@ -6,3 +6,5 @@ obj/
 *.suo
 *.log
 node_modules/
+appsettings.Development.json
+
