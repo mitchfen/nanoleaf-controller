@@ -22,7 +22,7 @@ body {
     padding: 30px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 .card-header {
@@ -167,5 +167,5 @@ body {
 hr {
     border: none;
     border-top: 1px solid #eee;
-    margin: 20px 0;
+    margin: 15px 0;
 }
