@@ -10,6 +10,7 @@ COPY . .
 RUN dotnet publish nanoleaf-controller.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+LABEL org.opencontainers.image.source https://github.com/mitchfen/nanoleaf-controller
 WORKDIR /app
 
 COPY --from=build /app .
