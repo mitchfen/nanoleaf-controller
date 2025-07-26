@@ -1,0 +1,31 @@
+image:
+  repository: ghcr.io/mitchfen/nanoleaf-controller
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: ""
+  annotations:    
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  host: nanoleaf-controller.home
+  path: /
+  pathType: Prefix
+
+resources: 
+  limits:
+    cpu: 2
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 500Mi
+
+secret:
+  nanoleafIpAddress: "==="
+  nanoleafAuthToken: "==="
+

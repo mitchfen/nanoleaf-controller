@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nanoleafcontroller-deployment
+  labels:
+    app: nanoleafcontroller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nanoleafcontroller
+  template:
+    metadata:
+      labels:
+        app: nanoleafcontroller
+    spec:
+      containers:
+        - name: nanoleafcontroller
+          image: ghcr.io/mitchfen/nanoleaf-controller:latest
+          resources: 
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 500Mi
+          env:
+            - name: Nanoleaf__IpAddress
+              valueFrom:
+                secretKeyRef:
+                  name: nanoleaf-secrets
+                  key: Nanoleaf__IpAddress
+            - name: Nanoleaf__AuthToken
+              valueFrom:
+                secretKeyRef:
+                  name: nanoleaf-secrets
+                  key: Nanoleaf__AuthToken
+          ports:
+            - containerPort: 8080
