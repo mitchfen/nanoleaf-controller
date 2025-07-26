@@ -31,7 +31,7 @@ jobs:
     name: Cleanup untagged container images
     runs-on: ubuntu-latest
     steps:
-      - uses: mitchfen/cleanup-untagged-container-images@main
+      - uses: mitchfen/cleanup-untagged-container-images@v1
         with:
           username: 'mitchfen'
           container-name: 'nanoleaf-controller'
