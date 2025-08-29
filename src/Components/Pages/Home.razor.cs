@@ -1,13 +1,16 @@
 using Microsoft.AspNetCore.Components;
 using System.Text.Json;
+using System.Timers;
 
 namespace nanoleaf_controller.Components.Pages
 {
-    public partial class Home : ComponentBase
+    public partial class Home : ComponentBase, IDisposable
     {
         [Inject]
         private IConfiguration Configuration { get; set; }
 
+        private System.Timers.Timer debounceTimer;
+        private System.Timers.Timer pollingTimer;
         private string? statusMessage;
         private int brightness = 50;
         private int colorTemperature = 4000; // Default color temperature
@@ -20,6 +23,21 @@ namespace nanoleaf_controller.Components.Pages
             effects = Configuration.GetSection("Nanoleaf:Effects").Get<string[]>() ?? new string[0];
             selectedEffect = effects.FirstOrDefault() ?? "";
             await GetNanoleafState();
+
+            pollingTimer = new System.Timers.Timer(5000);
+            pollingTimer.Elapsed += async (sender, e) =>
+            {
+                await GetNanoleafState();
+                await InvokeAsync(StateHasChanged);
+            };
+            pollingTimer.AutoReset = true;
+            pollingTimer.Start();
+        }
+
+        public void Dispose()
+        {
+            debounceTimer?.Dispose();
+            pollingTimer?.Dispose();
         }
 
         private async Task SendPowerCommand(bool on)
@@ -28,19 +46,58 @@ namespace nanoleaf_controller.Components.Pages
             await GetNanoleafState(); // Refresh state after power command
         }
 
-        private async Task SetBrightness()
+        private void SetBrightness(ChangeEventArgs e)
         {
+            if (debounceTimer != null)
+            {
+                debounceTimer.Stop();
+                debounceTimer.Dispose();
+            }
+
+            brightness = Convert.ToInt32(e.Value);
+            debounceTimer = new System.Timers.Timer(200);
+            debounceTimer.Elapsed += async (sender, e) => await DebouncedSetBrightness();
+            debounceTimer.AutoReset = false;
+            debounceTimer.Start();
+        }
+
+        private async Task DebouncedSetBrightness()
+        {
+            await SendCommand(new { on = new { value = true } }, "state");
             await SendCommand(new { brightness = new { value = brightness } }, "state");
+            await GetNanoleafState();
+            await InvokeAsync(StateHasChanged);
         }
 
-        private async Task SetEffect()
+        private async Task SetEffect(ChangeEventArgs e)
         {
+            selectedEffect = e.Value.ToString();
+            await SendCommand(new { on = new { value = true } }, "state");
             await SendCommand(new { select = selectedEffect }, "effects");
+            await GetNanoleafState();
         }
 
-        private async Task SetColorTemperature()
+        private void SetColorTemperature(ChangeEventArgs e)
         {
+            if (debounceTimer != null)
+            {
+                debounceTimer.Stop();
+                debounceTimer.Dispose();
+            }
+
+            colorTemperature = Convert.ToInt32(e.Value);
+            debounceTimer = new System.Timers.Timer(200);
+            debounceTimer.Elapsed += async (sender, e) => await DebouncedSetColorTemperature();
+            debounceTimer.AutoReset = false;
+            debounceTimer.Start();
+        }
+
+        private async Task DebouncedSetColorTemperature()
+        {
+            await SendCommand(new { on = new { value = true } }, "state");
             await SendCommand(new { ct = new { value = colorTemperature } }, "state");
+            await GetNanoleafState();
+            await InvokeAsync(StateHasChanged);
         }
 
         private async Task SendCommand(object body, string endpoint)

@@ -9,37 +9,40 @@
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h1 class="card-title">Nanoleaf Controller</h1>
+            <h1 class="card-title">
+                Nanoleaf: 
+                @if (isNanoleafOn)
+                {
+                    <span style="color: green;">On</span>
+                }
+                else
+                {
+                    <span style="color: red;">Off</span>
+                }
+            </h1>
         </div>
-        <div class="control-group">
-            <div class="button-group">
-                <button class="btn btn-outline-success @(isNanoleafOn ? "active" : "")" @onclick="() => SendPowerCommand(true)">Turn On</button>
-                <button class="btn btn-outline-danger @(!isNanoleafOn ? "active" : "")" @onclick="() => SendPowerCommand(false)">Turn Off</button>
-            </div>
-        </div>
+
 
         <hr />
 
         <div class="control-group">
             <label for="brightness" class="form-label">Brightness</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="range" class="form-range" min="0" max="100" id="brightness" @bind="brightness" @bind:event="oninput" />
+                <input type="range" class="form-range" min="0" max="100" id="brightness" value="@brightness" @oninput="(ChangeEventArgs __e) => SetBrightness(__e)" />
                 <span style="width: 40px; text-align: right;">@brightness%</span>
             </div>
-            <button class="btn btn-primary" @onclick="SetBrightness">Set Brightness</button>
         </div>
 
         <hr />
 
         <div class="control-group">
             <label for="effect" class="form-label">Effect</label>
-            <select class="form-select" id="effect" @bind="selectedEffect">
+            <select class="form-select" id="effect" @onchange="(ChangeEventArgs __e) => SetEffect(__e)">
                 @foreach (var effect in effects)
                 {
-                    <option value="@effect">@effect</option>
+                    <option value="@effect" selected="@(effect == selectedEffect)">@effect</option>
                 }
             </select>
-            <button class="btn btn-primary" @onclick="SetEffect">Set Effect</button>
         </div>
 
         <hr />
@@ -47,10 +50,15 @@
         <div class="control-group">
             <label for="colorTemp" class="form-label">Color Temperature</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="range" class="form-range" min="1200" max="6500" id="colorTemp" @bind="colorTemperature" @bind:event="oninput" />
+                <input type="range" class="form-range" min="1200" max="6500" id="colorTemp" value="@colorTemperature" @oninput="(ChangeEventArgs __e) => SetColorTemperature(__e)" />
                 <span style="width: 60px; text-align: right;">@colorTemperature K</span>
             </div>
-            <button class="btn btn-primary" @onclick="SetColorTemperature">Set Color Temperature</button>
+        </div>
+
+        <div class="control-group">
+            <div class="button-group">
+                <button class="btn @(isNanoleafOn ? "btn-danger" : "btn-success")" @onclick="() => SendPowerCommand(!isNanoleafOn)">@(isNanoleafOn ? "Turn Off" : "Turn On")</button>
+            </div>
         </div>
 
         @if (!string.IsNullOrEmpty(statusMessage))
