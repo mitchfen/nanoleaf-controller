@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: 'weekly'
+      timezone: 'America/Detroit'
+      day: 'friday'
+      time: '10:00'
+    reviewers:
+      - "mitchfen"
+
+  - package-ecosystem: "github-actions"
+    directory: ".github/workflows"
+    schedule:
+      interval: 'weekly'
+      timezone: 'America/Detroit'
+      day: 'friday'
+      time: '10:00'
+    reviewers:
+      - "mitchfen"
