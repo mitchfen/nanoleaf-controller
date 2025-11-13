@@ -7,7 +7,7 @@ updates:
       timezone: 'America/Detroit'
       day: 'friday'
       time: '10:00'
-    reviewers:
+    assignees:
       - "mitchfen"
 
   - package-ecosystem: "github-actions"
@@ -17,5 +17,5 @@ updates:
       timezone: 'America/Detroit'
       day: 'friday'
       time: '10:00'
-    reviewers:
+    assignees:
       - "mitchfen"
