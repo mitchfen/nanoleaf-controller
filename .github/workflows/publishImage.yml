@@ -22,8 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - run: ./buildContainer.sh
+      - run: ./buildContainer.ps1
         working-directory: src
+        shell: pwsh
       - run: docker push ghcr.io/mitchfen/nanoleaf-controller:latest 
 
   cleanup:
