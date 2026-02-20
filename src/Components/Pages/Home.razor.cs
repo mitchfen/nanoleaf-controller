@@ -1,14 +1,13 @@
 using Microsoft.AspNetCore.Components;
 using nanoleaf_controller.Services;
 using System.Text;
-using System.Timers;
 
 namespace nanoleaf_controller.Components.Pages
 {
     public partial class Home : ComponentBase, IDisposable
     {
         [Inject]
-        private NanoleafService NanoleafService { get; set; } = default!;
+        private NanoleafService NanoleafService { get; set; } = null!;
 
         private System.Timers.Timer? debounceTimer;
         private System.Timers.Timer? pollingTimer;
@@ -18,7 +17,7 @@ namespace nanoleaf_controller.Components.Pages
         // Global Controls
         private int brightness = 50;
         private string selectedEffect = "Cozy";
-        private List<string> effects = new();
+        private List<string> effects = [];
         private bool isNanoleafOn;
         private string hexColor = "#ffffff";
 
@@ -26,11 +25,11 @@ namespace nanoleaf_controller.Components.Pages
         private PanelLayout? layout;
         private Dictionary<int, string> panelColors = new();
         private List<string> currentPalette = new();
-        private Random random = new Random();
+        private Random random = new();
         
         // SVG Visualization
-        private int viewBoxX = 0;
-        private int viewBoxY = 0;
+        private int viewBoxX;
+        private int viewBoxY;
         private int viewBoxWidth = 1000;
         private int viewBoxHeight = 1000;
 
@@ -40,7 +39,7 @@ namespace nanoleaf_controller.Components.Pages
             await RefreshLayout();
 
             pollingTimer = new System.Timers.Timer(5000);
-            pollingTimer.Elapsed += async (sender, e) =>
+            pollingTimer.Elapsed += async (_, _) =>
             {
                 await RefreshState();
                 await InvokeAsync(StateHasChanged);
@@ -49,13 +48,11 @@ namespace nanoleaf_controller.Components.Pages
             pollingTimer.Start();
             
             animationTimer = new System.Timers.Timer(3000); // Update animation every 3s
-            animationTimer.Elapsed += (sender, e) => 
+            animationTimer.Elapsed += (_, _) =>
             {
-                if (isNanoleafOn && currentPalette.Any())
-                {
-                    AnimatePalette();
-                    InvokeAsync(StateHasChanged);
-                }
+                if (!isNanoleafOn || currentPalette.Count == 0) return;
+                AnimatePalette();
+                InvokeAsync(StateHasChanged);
             };
             animationTimer.AutoReset = true;
             animationTimer.Start();
@@ -87,7 +84,6 @@ namespace nanoleaf_controller.Components.Pages
                 }
                 
                 hexColor = HsvToHex(state.Hue, state.Saturation, 100);
-                colorMode = state.ColorMode;
                 
                 await UpdateDisplayColor(state.IsOn, state.ColorMode, state.Hue, state.Saturation, state.ColorTemperature, state.SelectedEffect);
 
@@ -224,7 +220,7 @@ namespace nanoleaf_controller.Components.Pages
                              
             double side = layout?.SideLength ?? 100;
             // Radius of circumcircle
-            double r = side / Math.Sqrt(3); 
+            var r = side / Math.Sqrt(3); 
             
             // Adjust radius based on shape
             if (p.ShapeType == 0 || p.ShapeType == 7 || p.ShapeType == 8) // Triangles
@@ -296,7 +292,7 @@ namespace nanoleaf_controller.Components.Pages
             {
                 brightness = val;
                 debounceTimer = new System.Timers.Timer(200);
-                debounceTimer.Elapsed += async (sender, e) => await DebouncedSetBrightness();
+                debounceTimer.Elapsed += async (_, _) => await DebouncedSetBrightness();
                 debounceTimer.AutoReset = false;
                 debounceTimer.Start();
             }
