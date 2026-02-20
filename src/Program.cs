@@ -1,10 +1,13 @@
 using nanoleaf_controller.Components;
+using nanoleaf_controller.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHttpClient<NanoleafService>();
 
 var app = builder.Build();
 
