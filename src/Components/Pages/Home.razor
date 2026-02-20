@@ -5,38 +5,98 @@
 @using System.Text
 @using System.Text.Json
 
-
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h1 class="card-title">
-                Nanoleaf: 
-                @if (isNanoleafOn)
+<div class="dashboard-container">
+    
+    <div class="column-left">
+        <!-- Visualization Panel -->
+        <div class="card visualization-card">
+            <div class="card-header" style="width: 100%; margin-bottom: 0;">
+                <h2 class="card-title">Live Preview</h2>
+            </div>
+            
+            <div class="svg-container">
+                @if (layout?.PositionData != null)
                 {
-                    <span style="color: green;">On</span>
+                    <svg viewBox="@viewBoxX @viewBoxY @viewBoxWidth @viewBoxHeight" 
+                         width="100%" 
+                         height="100%"
+                         preserveAspectRatio="xMidYMid meet">
+                        
+                        <defs>
+                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+
+                        @foreach (var p in layout.PositionData)
+                        {
+                            <polygon points="@GetSvgPoints(p)" 
+                                     fill="@GetPanelColor(p.PanelId)" 
+                                     stroke="rgba(255,255,255,0.1)" 
+                                     stroke-width="2" 
+                                     class="nanoleaf-panel"
+                                     style="transition: fill 1s ease;" /> 
+                        }
+                    </svg>
                 }
                 else
                 {
-                    <span style="color: red;">Off</span>
+                    <div style="color: var(--text-secondary);">Loading layout...</div>
                 }
-            </h1>
-        </div>
-
-
-        <hr />
-
-        <div class="control-group">
-            <label for="brightness" class="form-label">Brightness</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="range" class="form-range" min="0" max="100" id="brightness" value="@brightness" @oninput="(ChangeEventArgs __e) => SetBrightness(__e)" />
-                <span style="width: 40px; text-align: right;">@brightness%</span>
             </div>
         </div>
 
+        <!-- Status Panel -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">System Status</h2>
+                <span class="status-badge @(isNanoleafOn ? "status-on" : "status-off")">
+                    @(isNanoleafOn ? "Active" : "Offline")
+                </span>
+            </div>
+            
+            <div class="status-details">
+                <div class="status-item">
+                    <span class="label">Active Scene/Color</span>
+                    <span class="value" style="color: var(--accent-color);">@selectedEffect</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Brightness</span>
+                    <span class="value">@brightness%</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Connection</span>
+                    <span class="value">Local API</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Panels Detected</span>
+                    <span class="value">@(layout?.NumPanels ?? 0)</span>
+                </div>
+           </div>
+        </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Controller</h1>
+        </div>
+
+        <div class="control-group">
+            <div class="d-flex justify-between align-center">
+                <label for="brightness" class="control-label">Brightness</label>
+            </div>
+            <input type="range" class="form-range" min="0" max="100" id="brightness" value="@brightness" @oninput="(ChangeEventArgs __e) => SetBrightness(__e)" />
+        </div>
+
         <hr />
 
         <div class="control-group">
-            <label for="effect" class="form-label">Effect</label>
+            <label for="effect" class="control-label">Scene Selection</label>
             <select class="form-select" id="effect" @onchange="(ChangeEventArgs __e) => SetEffect(__e)">
                 @foreach (var effect in effects)
                 {
@@ -48,34 +108,23 @@
         <hr />
 
         <div class="control-group">
-            <label for="colorTemp" class="form-label">Color Temperature</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="range" class="form-range" min="1200" max="6500" id="colorTemp" value="@colorTemperature" @oninput="(ChangeEventArgs __e) => SetColorTemperature(__e)" />
-                <span style="width: 60px; text-align: right;">@colorTemperature K</span>
-            </div>
-        </div>
-
-        <hr />
-
-        <div class="control-group">
-            <label for="colorPicker" class="form-label">Color</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <label for="colorPicker" class="control-label">Solid Color</label>
+            <div class="color-picker-wrapper">
                 <input type="color" id="colorPicker" class="form-control form-control-color" value="@hexColor" title="Choose your color" @onchange="(ChangeEventArgs __e) => SetColor(__e)">
             </div>
         </div>
 
-        <div class="control-group">
-            <div class="button-group">
-                <button class="btn @(isNanoleafOn ? "btn-danger" : "btn-success")" @onclick="() => SendPowerCommand(!isNanoleafOn)">@(isNanoleafOn ? "Turn Off" : "Turn On")</button>
-            </div>
+        <div class="mt-4" style="margin-top: auto;"> <!-- Push button to bottom -->
+            <button class="btn @(isNanoleafOn ? "btn-danger" : "btn-success")" @onclick="() => SendPowerCommand(!isNanoleafOn)">
+                @(isNanoleafOn ? "Turn Off" : "Turn On")
+            </button>
         </div>
 
         @if (!string.IsNullOrEmpty(statusMessage))
         {
-            <div class="alert">
+            <div class="alert" style="margin-top: 1rem; color: var(--danger-color); border: 1px solid var(--danger-color); background: rgba(239, 68, 68, 0.1);">
                 @statusMessage
             </div>
         }
     </div>
 </div>
-

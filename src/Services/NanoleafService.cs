@@ -136,6 +136,55 @@ public class NanoleafService
             throw; // Re-throw to let UI handle or show error
         }
     }
+
+    public async Task<PanelLayout?> GetPanelLayoutAsync()
+    {
+        if (!IsConfigured) return null;
+
+        try
+        {
+            var response = await _httpClient.GetAsync(_baseUrl + "panelLayout/layout");
+            response.EnsureSuccessStatusCode();
+            
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<PanelLayout>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching panel layout: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<NanoleafEffect?> GetEffectDetailsAsync(string effectName)
+    {
+        if (!IsConfigured) return null;
+
+        try
+        {
+            var command = new
+            {
+                write = new
+                {
+                    command = "request",
+                    animName = effectName
+                }
+            };
+            
+            var json = JsonSerializer.Serialize(command);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync(_baseUrl + "effects", content);
+            response.EnsureSuccessStatusCode();
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<NanoleafEffect>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching effect details: {ex.Message}");
+            return null;
+        }
+    }
 }
 
 public class NanoleafState
@@ -148,4 +197,34 @@ public class NanoleafState
     public string? ColorMode { get; set; } // "ct", "effect", "hs"
     public string? SelectedEffect { get; set; }
     public List<string>? Effects { get; set; }
+}
+
+public class PanelLayout
+{
+    public int NumPanels { get; set; }
+    public int SideLength { get; set; }
+    public List<PanelPosition>? PositionData { get; set; }
+}
+
+public class PanelPosition
+{
+    public int PanelId { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int O { get; set; }
+    public int ShapeType { get; set; }
+}
+
+public class NanoleafEffect
+{
+    public string? AnimName { get; set; }
+    public string? PluginType { get; set; }
+    public List<NanoleafPaletteColor>? Palette { get; set; }
+}
+
+public class NanoleafPaletteColor
+{
+    public int Hue { get; set; }
+    public int Saturation { get; set; }
+    public int Brightness { get; set; }
 }
