@@ -1,12 +1,16 @@
 version: 2
 updates:
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "mitchfen"
+
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
       interval: 'weekly'
-      timezone: 'America/Detroit'
-      day: 'friday'
-      time: '10:00'
     assignees:
       - "mitchfen"
 
@@ -14,8 +18,5 @@ updates:
     directory: ".github/workflows"
     schedule:
       interval: 'weekly'
-      timezone: 'America/Detroit'
-      day: 'friday'
-      time: '10:00'
     assignees:
       - "mitchfen"
